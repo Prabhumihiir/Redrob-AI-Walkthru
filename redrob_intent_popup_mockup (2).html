@@ -1,0 +1,509 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Redrob — Post-signup intent popup (mockup)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400;1,6..72,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --red:#DC4A3A; --red-bg:#FEF2F0; --red-bd:#F3C7C0;
+    --ink:#1C1917; --text:#3D3830; --sub:#78716C; --faint:#A8A29E;
+    --line:#EAE8E5; --line-2:#DCD9D5; --bg:#FFFFFF; --rail:#FBFAF9; --hover:#FAF9F8;
+    --shadow:0 1px 2px rgba(28,25,23,.04), 0 10px 34px rgba(28,25,23,.06);
+    --modal-shadow:0 18px 50px rgba(28,25,23,.18), 0 3px 10px rgba(28,25,23,.07);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--text);background:var(--bg);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  .serif{font-family:"Newsreader",Georgia,"Times New Roman",serif}
+  svg{display:block}
+  ::-webkit-scrollbar{width:10px}
+  ::-webkit-scrollbar-thumb{background:#E3E0DC;border-radius:8px;border:3px solid #fff}
+
+  .demobar{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding:9px 18px;background:rgba(251,250,249,.92);backdrop-filter:saturate(140%) blur(8px);border-bottom:1px solid var(--line)}
+  .demobar .tag{font-size:10.5px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:var(--faint)}
+  .demobar .grp{display:flex;align-items:center;gap:8px}
+  .demobar .grp>span{font-size:11.5px;color:var(--sub);font-weight:500}
+  .seg{display:inline-flex;background:#F0EEEC;border-radius:9px;padding:3px}
+  .seg button{border:0;background:transparent;cursor:pointer;font:inherit;font-size:12px;font-weight:500;color:var(--sub);padding:5px 11px;border-radius:6px;line-height:1;transition:.15s}
+  .seg button.on{background:#fff;color:var(--ink);box-shadow:0 1px 2px rgba(28,25,23,.08)}
+  .demobar .reopen{margin-left:auto;border:1px solid var(--line-2);background:#fff;cursor:pointer;font:inherit;font-size:12px;font-weight:500;color:var(--text);padding:6px 12px;border-radius:8px;transition:.15s}
+  .demobar .reopen:hover{border-color:var(--ink);color:var(--ink)}
+
+  .shell{display:flex;height:calc(100vh - 47px);min-height:520px}
+  .sidebar{width:60px;flex:0 0 60px;border-right:1px solid var(--line);background:var(--rail);display:flex;flex-direction:column;align-items:center;padding:16px 0;gap:14px}
+  .sidebar .ic{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;color:var(--sub);cursor:pointer}
+  .sidebar .ic:hover{background:#F1EFEC;color:var(--ink)}
+  .sidebar .logo{width:30px;height:30px;border-radius:9px;background:#fff;border:1px solid var(--line-2);cursor:pointer}
+  .sidebar .logo:hover{border-color:var(--red)}
+
+  .main{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}
+
+  #emptyState{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px 96px;overflow-y:auto}
+  .main.chatting #emptyState{display:none}
+  .hero{width:100%;max-width:720px}
+  h1.head{text-align:center;color:var(--ink);font-weight:500;font-size:46px;line-height:1.05;letter-spacing:-.01em}
+  h1.head i{font-style:italic}
+  .subhead{text-align:center;color:var(--sub);font-size:18px;margin-top:14px}
+
+  .composer{background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:16px 18px 10px;transition:border-color .15s,box-shadow .15s}
+  #emptyState .composer{margin-top:34px}
+  .composer:focus-within{border-color:var(--line-2);box-shadow:0 1px 2px rgba(28,25,23,.05),0 14px 40px rgba(28,25,23,.09)}
+  .composer textarea{width:100%;border:0;outline:0;resize:none;background:transparent;font:inherit;font-size:16px;color:var(--ink);line-height:1.5}
+  #emptyState .composer textarea{min-height:58px}
+  .composer textarea::placeholder{color:var(--faint)}
+  .crow{display:flex;align-items:center;justify-content:space-between;margin-top:6px}
+  .icbtn{width:34px;height:34px;border-radius:9px;border:0;background:transparent;color:var(--sub);display:grid;place-items:center;cursor:pointer;transition:.15s}
+  .icbtn:hover{background:var(--hover);color:var(--ink)}
+  .cright{display:flex;align-items:center;gap:4px}
+  .model{display:inline-flex;align-items:center;gap:5px;border:0;background:transparent;cursor:pointer;font:inherit;font-size:14px;font-weight:500;color:var(--text);padding:6px 8px;border-radius:8px;transition:.15s}
+  .model:hover{background:var(--hover)}
+  .send{width:36px;height:36px;border-radius:50%;border:0;cursor:pointer;display:grid;place-items:center;background:#F1EFEC;color:var(--faint);transition:.18s;margin-left:2px}
+  .send.live{background:var(--red);color:#fff}
+  .send.live:hover{filter:brightness(.96)}
+
+  .chips{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:22px}
+  .chip{display:inline-flex;align-items:center;gap:9px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:9px 14px;cursor:pointer;color:var(--ink);font:inherit;font-size:14px;font-weight:500;transition:.15s}
+  .chip:hover{border-color:var(--line-2);background:var(--hover)}
+  .chip .gl{color:var(--sub);display:grid;place-items:center}
+  .chip .pl{color:var(--faint);display:grid;place-items:center;margin-left:1px}
+  .chip.active{background:var(--red);border-color:var(--red);color:#fff}
+  .chip.active .gl,.chip.active .pl{color:#fff}
+
+  .reengage{max-width:680px;margin:0 auto 22px;display:none}
+  .reengage.show{display:block;animation:fade .25s ease}
+  .reengage .rlabel{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .reengage .rlabel span{font-size:12.5px;color:var(--sub);font-weight:500}
+  .reengage .rx{border:0;background:transparent;color:var(--faint);cursor:pointer;display:grid;place-items:center;width:24px;height:24px;border-radius:6px}
+  .reengage .rx:hover{background:var(--hover);color:var(--ink)}
+  .rchips{display:flex;gap:9px;flex-wrap:wrap}
+  .rchip{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 13px;cursor:pointer;color:var(--text);font:inherit;font-size:13px;font-weight:500;transition:.15s}
+  .rchip:hover{border-color:var(--line-2);background:var(--hover);color:var(--ink)}
+  .rchip .dot{width:6px;height:6px;border-radius:50%;background:var(--red);display:none}
+  .rchip.sug{border-color:var(--red-bd)}
+  .rchip.sug .dot{display:block}
+
+  #chatState{flex:1;display:none;flex-direction:column;min-height:0}
+  .main.chatting #chatState{display:flex}
+  .thread{flex:1;overflow-y:auto;padding:30px 24px 18px}
+  .threadInner{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+  .msg{max-width:100%}
+  .m-user{align-self:flex-end;max-width:80%;background:#F4F2F0;color:var(--ink);border-radius:16px 16px 5px 16px;padding:11px 15px;font-size:15px;line-height:1.5;animation:rise .3s ease}
+  .m-bot{align-self:stretch;animation:fade .3s ease}
+  .botname{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--sub);font-weight:500;margin-bottom:10px}
+  .botname .d{width:7px;height:7px;border-radius:50%;background:var(--red)}
+  .botlead{font-size:15px;color:var(--text);line-height:1.55;margin-bottom:13px}
+  .typing{display:inline-flex;gap:5px;padding:3px 0}
+  .typing i{width:7px;height:7px;border-radius:50%;background:var(--line-2);animation:bounce 1.2s infinite}
+  .typing i:nth-child(2){animation-delay:.18s}.typing i:nth-child(3){animation-delay:.36s}
+
+  .rescard{border:1px solid var(--line);border-radius:14px;padding:14px 15px;background:#fff;transition:.15s;animation:rise .35s ease}
+  .rescard+.rescard{margin-top:9px}
+  .rescard:hover{border-color:var(--line-2)}
+  .jrow1{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+  .jtitle{font-size:15px;font-weight:600;color:var(--ink);line-height:1.3}
+  .matchb{flex:0 0 auto;font-size:11.5px;font-weight:600;color:var(--red);background:var(--red-bg);border:1px solid var(--red-bd);border-radius:999px;padding:3px 9px;white-space:nowrap}
+  .jmeta{font-size:13px;color:var(--sub);margin-top:5px}
+  .jrow2{display:flex;align-items:center;justify-content:space-between;margin-top:11px}
+  .jsal{font-size:13.5px;font-weight:600;color:var(--text)}
+  .btn-ghost{border:1px solid var(--line-2);background:#fff;border-radius:9px;padding:6px 13px;font:inherit;font-size:13px;font-weight:500;color:var(--ink);cursor:pointer;transition:.15s}
+  .btn-ghost:hover{border-color:var(--ink)}
+
+  .cname{font-size:16px;font-weight:600;color:var(--ink)}
+  .csub{font-size:13px;color:var(--sub);margin-top:2px}
+  .cdesc{font-size:13.5px;color:var(--text);margin-top:10px;line-height:1.5}
+  .cstats{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+  .cstat{font-size:11.5px;color:var(--text);background:#F4F2F0;border-radius:999px;padding:4px 10px}
+  .copen{font-size:13.5px;color:var(--text);margin-top:13px;font-weight:500}
+  .minijob{display:flex;align-items:center;justify-content:space-between;font-size:13px;color:var(--text);padding:8px 0;border-top:1px solid var(--line)}
+  .minijob:first-of-type{margin-top:8px}
+  .minijob .ms{color:var(--sub)}
+
+  .prow{display:flex;align-items:center;gap:12px}
+  .av{width:38px;height:38px;flex:0 0 38px;border-radius:50%;background:#F4F2F0;color:var(--sub);display:grid;place-items:center;font-size:13px;font-weight:600}
+  .pinfo{flex:1;min-width:0}
+  .pname{font-size:14.5px;font-weight:600;color:var(--ink)}
+  .prole{font-size:12.5px;color:var(--sub);margin-top:2px}
+  .ptag{display:inline-block;font-size:11px;color:var(--text);background:#F4F2F0;border-radius:999px;padding:2px 9px;margin-top:6px}
+  .ptag.hot{color:var(--red);background:var(--red-bg);border:1px solid var(--red-bd)}
+
+  .score{display:flex;align-items:center;gap:18px}
+  .scnum{font-size:36px;font-weight:600;color:var(--ink);line-height:1}
+  .scnum span{font-size:16px;color:var(--faint);font-weight:500}
+  .scbarwrap{flex:1}
+  .sccap{font-size:12.5px;color:var(--sub);margin-bottom:7px}
+  .scbar{height:8px;background:#F0EEEC;border-radius:999px;overflow:hidden}
+  .scfill{height:100%;background:var(--red);border-radius:999px}
+  .brk{margin-top:16px;display:flex;flex-direction:column;gap:10px}
+  .brrow{display:flex;align-items:center;gap:12px}
+  .brlab{font-size:13px;color:var(--sub);width:130px;flex:0 0 130px}
+  .brbar{flex:1;height:6px;background:#F0EEEC;border-radius:999px;overflow:hidden}
+  .brfill{height:100%;background:var(--line-2);border-radius:999px}
+  .brval{font-size:12.5px;color:var(--text);width:26px;text-align:right}
+  .fixes{margin-top:18px}
+  .fxh{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:9px}
+  .fxli{display:flex;gap:10px;font-size:13.5px;color:var(--text);line-height:1.5;margin-bottom:8px}
+  .fxli .fxd{flex:0 0 auto;margin-top:7px;width:5px;height:5px;border-radius:50%;background:var(--red)}
+
+  .resfoot{display:flex;align-items:center;justify-content:space-between;margin-top:14px;font-size:12.5px;color:var(--sub);gap:10px}
+  .reflink{color:var(--text);font-weight:500;cursor:pointer;border:0;background:transparent;font:inherit;font-size:12.5px;padding:0}
+  .reflink:hover{color:var(--red)}
+  .qa{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+  .qa button{border:1px solid var(--line-2);background:#fff;border-radius:999px;padding:7px 13px;font:inherit;font-size:13px;font-weight:500;color:var(--ink);cursor:pointer;transition:.15s}
+  .qa button:hover{border-color:var(--ink)}
+
+  .composerBar{border-top:1px solid var(--line);padding:14px 24px 18px;background:#fff}
+  .composerBar .composer{max-width:720px;margin:0 auto;box-shadow:none;padding:12px 16px 8px}
+  .composerBar .composer textarea{min-height:24px}
+  .modeind{max-width:720px;margin:0 auto 9px;display:none}
+  .modeind.show{display:block}
+  .modepill{display:inline-flex;align-items:center;gap:8px;background:var(--red-bg);border:1px solid var(--red-bd);color:var(--red);border-radius:999px;padding:5px 8px 5px 12px;font-size:12.5px;font-weight:600}
+  .modepill button{border:0;background:transparent;color:var(--red);cursor:pointer;display:grid;place-items:center;width:18px;height:18px;border-radius:50%}
+  .modepill button:hover{background:rgba(220,74,58,.12)}
+
+  .overlay{position:fixed;inset:0;z-index:80;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(28,25,23,.34);backdrop-filter:blur(4px);opacity:0;transition:opacity .22s ease}
+  .overlay.open{display:flex;opacity:1}
+  .modal{width:100%;max-width:472px;background:#fff;border-radius:20px;box-shadow:var(--modal-shadow);padding:26px 26px 20px;transform:translateY(10px) scale(.99);opacity:0;transition:transform .26s cubic-bezier(.2,.7,.2,1),opacity .26s}
+  .overlay.open .modal{transform:none;opacity:1}
+  .mhead h2{font-weight:500;font-size:27px;color:var(--ink);letter-spacing:-.01em;line-height:1.12}
+  .mhead p{font-size:14px;color:var(--sub);margin-top:8px;line-height:1.5}
+  .options{margin-top:20px;display:flex;flex-direction:column;gap:9px}
+  .option{display:flex;align-items:center;gap:13px;width:100%;text-align:left;cursor:pointer;border:1px solid var(--line);background:#fff;border-radius:14px;padding:13px 14px;position:relative;transition:border-color .15s,background .15s,transform .12s;opacity:0;animation:rise .42s cubic-bezier(.2,.7,.2,1) forwards}
+  .overlay.open .option:nth-child(1){animation-delay:.05s}.overlay.open .option:nth-child(2){animation-delay:.10s}.overlay.open .option:nth-child(3){animation-delay:.15s}.overlay.open .option:nth-child(4){animation-delay:.20s}
+  .option:hover{border-color:var(--line-2);background:var(--hover)}
+  .option:active{transform:scale(.995)}
+  .option .oic{width:42px;height:42px;flex:0 0 42px;border-radius:11px;background:#F4F2F0;color:var(--text);display:grid;place-items:center}
+  .option .otxt{flex:1;min-width:0}
+  .option .ot{font-size:15px;font-weight:600;color:var(--ink);line-height:1.25}
+  .option .os{font-size:12.5px;color:var(--sub);margin-top:2px}
+  .option .oar{color:var(--faint);transition:transform .15s;flex:0 0 auto}
+  .option:hover .oar{transform:translateX(3px);color:var(--text)}
+  .option.sug{border-color:var(--red-bd)}
+  .option.sug .oic{background:var(--red-bg);color:var(--red)}
+  .badge{position:absolute;top:-9px;left:14px;background:var(--red-bg);color:var(--red);border:1px solid var(--red-bd);font-size:10.5px;font-weight:600;letter-spacing:.02em;padding:2px 8px;border-radius:999px;display:none}
+  .option.sug .badge{display:inline-block}
+  .skip{display:block;width:100%;text-align:center;margin-top:16px;border:0;background:transparent;cursor:pointer;font:inherit;font-size:13px;color:var(--sub);padding:6px;border-radius:8px;transition:.15s}
+  .skip:hover{color:var(--ink)}
+
+  @keyframes rise{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+  @keyframes bounce{0%,60%,100%{transform:translateY(0);opacity:.5}30%{transform:translateY(-4px);opacity:1}}
+
+  @media (max-width:600px){
+    h1.head{font-size:34px}.subhead{font-size:16px}#emptyState .composer{margin-top:26px}
+    .chips{gap:8px}.chip{font-size:13px;padding:8px 12px}.mhead h2{font-size:23px}
+    .sidebar{width:48px;flex-basis:48px}.brlab{width:96px;flex-basis:96px}
+  }
+</style>
+</head>
+<body>
+
+  <div class="demobar">
+    <span class="tag">Mockup · intent popup</span>
+    <div class="grp"><span>View</span>
+      <div class="seg" id="segView"><button data-v="first" class="on">First session</button><button data-v="returning">Returning</button></div>
+    </div>
+    <div class="grp"><span>Cohort</span>
+      <div class="seg" id="segCohort"><button data-c="h2s" class="on">H2S</button><button data-c="campus">Campus</button><button data-c="organic">Organic</button></div>
+    </div>
+    <button class="reopen" id="reopen">Reopen popup</button>
+  </div>
+
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="ic" id="newchat" title="New chat">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="m16 15-3-3 3-3"/></svg>
+      </div>
+      <div class="logo" id="logo" title="New chat"></div>
+    </aside>
+
+    <main class="main" id="main">
+      <div id="emptyState">
+        <div class="hero">
+          <h1 class="head serif">Built <i>around</i> you.</h1>
+          <p class="subhead">AI tools for India's most ambitious</p>
+
+          <div class="reengage" id="reengage">
+            <div class="rlabel"><span>Pick up where you left off</span>
+              <button class="rx" id="reDismiss" title="Dismiss"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+            </div>
+            <div class="rchips" id="rchips"></div>
+          </div>
+
+          <div class="composer">
+            <textarea id="composerA" placeholder="Ask Redrob anything" rows="2"></textarea>
+            <div class="crow">
+              <button class="icbtn" title="Attach"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></button>
+              <div class="cright">
+                <button class="model">Redrob 2B <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+                <button class="icbtn" title="Language"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg></button>
+                <button class="send" id="sendA" title="Send"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg></button>
+              </div>
+            </div>
+          </div>
+
+          <div class="chips" id="chips">
+            <button class="chip" data-key="people"><span class="gl"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>People Search<span class="pl"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></span></button>
+            <button class="chip" data-key="company"><span class="gl"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="3" width="12" height="18" rx="1.5"/><path d="M6 21h12"/><path d="M10 7h.01M14 7h.01M10 11h.01M14 11h.01M10 15h.01M14 15h.01"/></svg></span>Company Search<span class="pl"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></span></button>
+            <button class="chip" data-key="jobs"><span class="gl"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><path d="M2 13h20"/></svg></span>Job Search<span class="pl"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></span></button>
+            <button class="chip" data-key="resume"><span class="gl"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h6"/></svg></span>Resume Ranker<span class="pl"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></span></button>
+          </div>
+        </div>
+      </div>
+
+      <div id="chatState">
+        <div class="thread" id="thread"><div class="threadInner" id="threadInner"></div></div>
+        <div class="composerBar">
+          <div class="modeind" id="modeind"></div>
+          <div class="composer">
+            <textarea id="composerB" placeholder="Ask a follow-up" rows="1"></textarea>
+            <div class="crow">
+              <button class="icbtn" title="Attach"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></button>
+              <div class="cright">
+                <button class="model">Redrob 2B <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+                <button class="send" id="sendB" title="Send"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div class="overlay" id="overlay">
+    <div class="modal">
+      <div class="mhead"><h2 class="serif">Where would you like to start?</h2><p>Pick a starting point — or skip and just ask. You can switch anytime.</p></div>
+      <div class="options" id="options"></div>
+      <button class="skip" id="skip">Skip — just start typing</button>
+    </div>
+  </div>
+
+<script>
+(function(){
+  var MODES = {
+    deep_research:{ic:'<circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>',
+      label:'Deep Research', title:'Run deep research on anything', sub:'Sourced and structured, in minutes',
+      query:'Run deep research on a topic for me', rlabel:'Deep research'},
+    jobs:{ic:'<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><path d="M2 13h20"/>',
+      label:'Job Search', title:'Find jobs across 2 crore+ roles', sub:'Live openings worldwide, matched to you',
+      query:'Find jobs matched to my skills across your 2 crore+ active roles', rlabel:'Find jobs'},
+    people:{ic:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+      label:'People Search', title:'Find people to prospect', sub:'Decision-makers at companies you target',
+      query:'Find people to prospect at companies I am targeting', rlabel:'People to prospect'},
+    news:{ic:'<path d="M16 7h6v6"/><path d="m22 7-8.5 8.5-5-5L2 17"/>',
+      label:'Trending', title:'Find the latest trending topics', sub:"What's moving right now in your space",
+      query:'Show me the latest trending topics and news in my space', rlabel:'Trending now'},
+    company:{label:'Company Search', query:'Research a company before I apply'},
+    resume:{label:'Resume Ranker', query:'Score my resume and show me what to improve'}
+  };
+  var SUGGEST = {h2s:'deep_research', campus:'jobs', organic:null};
+  var ORDER_BASE = ['jobs','deep_research','people','news'];
+
+  // ── mock datasets (illustrative placeholder data) ──
+  var JOBS = [
+    {t:'Product Analyst', c:'Razorpay', loc:'Bengaluru · Hybrid', s:'₹14–20 LPA', m:92},
+    {t:'Associate Product Manager', c:'CRED', loc:'Bengaluru · On-site', s:'₹18–26 LPA', m:88},
+    {t:'Data Analyst', c:'Stripe', loc:'Remote · Global', s:'$90–120K', m:84},
+    {t:'Business Analyst', c:'Zomato', loc:'Gurugram · Hybrid', s:'₹10–16 LPA', m:81}
+  ];
+  var PROSPECTS = [
+    {n:'Rohan Kapoor', r:'VP Engineering · PhonePe', tag:'Decision-maker', hot:true},
+    {n:'Sneha Iyer', r:'Head of Talent · Meesho', tag:'Matches your ICP', hot:false},
+    {n:'Arjun Desai', r:'Director, Product · Groww', tag:'Recently active', hot:false}
+  ];
+  var NEWS = [
+    {h:"India's AI talent demand jumps 40% as GCCs expand", src:'Economic Times', t:'2h ago', cat:'Careers'},
+    {h:'New-grad hiring rebounds across IT services for FY27', src:'Inc42', t:'5h ago', cat:'Jobs'},
+    {h:'RBI fintech sandbox adds 12 startups', src:'Mint', t:'8h ago', cat:'Fintech'},
+    {h:'Bengaluru tops APAC for new GCC setups', src:'YourStory', t:'1d ago', cat:'Industry'}
+  ];
+  var RESEARCH = {
+    title:'AI adoption in Indian enterprises — 2026',
+    findings:[
+      'Enterprise AI spend in India is on track to grow ~30% year over year through 2027.',
+      'Talent, not budget, is the top adoption blocker for roughly 6 in 10 firms.',
+      'BFSI and IT services lead deployment; manufacturing is the fastest-rising sector.'
+    ],
+    sources:['NASSCOM','Inc42','Economic Times','RBI']
+  };
+
+  var state = {view:'first', cohort:'h2s', dismissed:false, reDismissed:false, mode:null};
+  var $ = function(s){return document.querySelector(s)};
+  var overlay=$('#overlay'), optionsEl=$('#options'), reengage=$('#reengage'), rchips=$('#rchips'),
+      main=$('#main'), thread=$('#thread'), threadInner=$('#threadInner'),
+      composerA=$('#composerA'), composerB=$('#composerB'), sendA=$('#sendA'), sendB=$('#sendB'),
+      modeind=$('#modeind');
+
+  function arrowSvg(){return '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>';}
+  function order(){var s=SUGGEST[state.cohort]; if(!s) return ORDER_BASE.slice(); return [s].concat(ORDER_BASE.filter(function(k){return k!==s}));}
+  function initials(n){var p=n.split(' '); return (p[0][0]+(p[1]?p[1][0]:'')).toUpperCase();}
+
+  function renderModal(){
+    var sug=SUGGEST[state.cohort];
+    optionsEl.innerHTML = order().map(function(k){
+      var o=MODES[k], is=(k===sug);
+      return '<button class="option'+(is?' sug':'')+'" data-key="'+k+'"><span class="badge">Suggested for you</span>'
+        +'<span class="oic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+o.ic+'</svg></span>'
+        +'<span class="otxt"><span class="ot">'+o.title+'</span><span class="os">'+o.sub+'</span></span>'
+        +'<span class="oar">'+arrowSvg()+'</span></button>';
+    }).join('');
+    Array.prototype.forEach.call(optionsEl.querySelectorAll('.option'),function(b){b.addEventListener('click',function(){route(b.getAttribute('data-key'));});});
+  }
+  function renderReengage(){
+    var sug=SUGGEST[state.cohort];
+    rchips.innerHTML = order().map(function(k){var o=MODES[k],is=(k===sug);return '<button class="rchip'+(is?' sug':'')+'" data-key="'+k+'"><span class="dot"></span>'+o.rlabel+'</button>';}).join('');
+    Array.prototype.forEach.call(rchips.querySelectorAll('.rchip'),function(b){b.addEventListener('click',function(){route(b.getAttribute('data-key'));});});
+  }
+  function setModeIndicator(){
+    if(state.mode){var o=MODES[state.mode];
+      modeind.innerHTML='<span class="modepill">'+o.label+'<button id="clrmode" title="Clear"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button></span>';
+      modeind.classList.add('show');
+      $('#clrmode').addEventListener('click',function(){state.mode=null;setModeIndicator();});
+    } else {modeind.classList.remove('show');modeind.innerHTML='';}
+  }
+  function syncSend(){ sendA.classList.toggle('live',composerA.value.trim().length>0); sendB.classList.toggle('live',composerB.value.trim().length>0); }
+
+  // ── result builders (mock) ──
+  function jobCard(j){
+    return '<div class="rescard"><div class="jrow1"><div class="jtitle">'+j.t+'</div><span class="matchb">'+j.m+'% match</span></div>'
+      +'<div class="jmeta">'+j.c+' · '+j.loc+'</div>'
+      +'<div class="jrow2"><span class="jsal">'+j.s+'</span><button class="btn-ghost">View role</button></div></div>';
+  }
+  function prospectCard(p){
+    return '<div class="rescard"><div class="prow"><div class="av">'+initials(p.n)+'</div>'
+      +'<div class="pinfo"><div class="pname">'+p.n+'</div><div class="prole">'+p.r+'</div><span class="ptag'+(p.hot?' hot':'')+'">'+p.tag+'</span></div>'
+      +'<button class="btn-ghost">Reach out</button></div></div>';
+  }
+  function newsCard(it){
+    return '<div class="rescard"><div class="jtitle">'+it.h+'</div><div class="jmeta" style="margin-top:6px">'+it.src+' · '+it.t+' · '+it.cat+'</div></div>';
+  }
+  function researchCard(){
+    var f=RESEARCH.findings.map(function(x){return '<div class="fxli"><span class="fxd"></span><span>'+x+'</span></div>';}).join('');
+    var s=RESEARCH.sources.map(function(x){return '<span class="cstat">'+x+'</span>';}).join('');
+    return '<div class="rescard"><div class="cname">'+RESEARCH.title+'</div>'
+      +'<div class="cdesc">Key findings, synthesised from 14 sources:</div>'
+      +'<div style="margin-top:12px">'+f+'</div>'
+      +'<div class="copen" style="margin-top:6px">Sources</div><div class="cstats" style="margin-top:8px">'+s+'</div></div>';
+  }
+  function companyCard(){
+    return '<div class="rescard"><div class="cname">Razorpay</div><div class="csub">Fintech · Bengaluru</div>'
+      +'<div class="cdesc">Payments and banking infrastructure for Indian businesses — used by 10M+ merchants.</div>'
+      +'<div class="cstats"><span class="cstat">Series F</span><span class="cstat">3,000+ employees</span><span class="cstat">Hiring up this quarter</span></div>'
+      +'<div class="copen">18 open roles · 6 match your profile</div>'
+      +'<div class="minijob"><span>Product Analyst</span><span class="ms">₹14–20 LPA · Bengaluru</span></div>'
+      +'<div class="minijob"><span>Backend Engineer</span><span class="ms">₹20–30 LPA · Bengaluru</span></div></div>';
+  }
+  function resumeCard(){
+    var brk=[['Impact & metrics',58],['Keyword match',64],['Formatting',82],['Role relevance',71]];
+    var fixes=['Add measurable outcomes to 3 of your bullets — numbers, %, ₹.',
+      'Missing keywords for your target roles: SQL, A/B testing, stakeholder management.',
+      'Tighten to one page — trim the early 2012–2014 section.'];
+    var b=brk.map(function(r){return '<div class="brrow"><div class="brlab">'+r[0]+'</div><div class="brbar"><div class="brfill" style="width:'+r[1]+'%"></div></div><div class="brval">'+r[1]+'</div></div>';}).join('');
+    var f=fixes.map(function(x){return '<div class="fxli"><span class="fxd"></span><span>'+x+'</span></div>';}).join('');
+    return '<div class="rescard"><div class="score"><div class="scnum">68<span>/100</span></div>'
+      +'<div class="scbarwrap"><div class="sccap">Against your target roles</div><div class="scbar"><div class="scfill" style="width:68%"></div></div></div></div>'
+      +'<div class="brk">'+b+'</div><div class="fixes"><div class="fxh">Top fixes</div>'+f+'</div></div>';
+  }
+  function foot(text){return '<div class="resfoot"><span>'+text+'</span><button class="reflink">Refine</button></div>';}
+  function qaHtml(keys){return '<div class="qa">'+keys.map(function(k){return '<button data-k="'+k+'">'+MODES[k].rlabel+'</button>';}).join('')+'</div>';}
+
+  function buildResult(key){
+    if(key==='jobs') return '<div class="botlead">Here are roles matched to your profile, ranked by fit.</div>'+JOBS.map(jobCard).join('')+foot('Showing 4 of 2 crore+ active roles, globally');
+    if(key==='deep_research') return '<div class="botlead">Here is what I found — sourced and structured.</div>'+researchCard()+foot('Synthesised from 14 sources · ask me to go deeper');
+    if(key==='people') return '<div class="botlead">People worth prospecting for your targets.</div>'+PROSPECTS.map(prospectCard).join('')+foot('3 of many · refine by company, role, or seniority');
+    if(key==='news') return '<div class="botlead">Trending right now in your space.</div>'+NEWS.map(newsCard).join('')+foot('Updated moments ago · ask for a specific topic');
+    if(key==='company') return '<div class="botlead">Here is a snapshot before you apply.</div>'+companyCard()+foot('From live company data · ask to compare another');
+    if(key==='resume') return '<div class="botlead">I scored your resume against your target roles.</div>'+resumeCard()+foot('Based on your current resume · re-run after edits');
+    return '<div class="botlead">Here is a quick take. For live results, pick a starting point below.</div>'+qaHtml(ORDER_BASE);
+  }
+  function buildGreeting(){
+    return '<div class="botlead">Hi, I\u2019m Redrob\u2019s proprietary LLM. What would you like help with?</div>'+qaHtml(ORDER_BASE);
+  }
+
+  function scrollDown(){thread.scrollTop=thread.scrollHeight;}
+  function wireQa(scope){Array.prototype.forEach.call(scope.querySelectorAll('.qa button'),function(b){b.addEventListener('click',function(){route(b.getAttribute('data-k'));});});}
+  function appendUser(text){var d=document.createElement('div');d.className='msg m-user';d.textContent=text;threadInner.appendChild(d);scrollDown();}
+  function appendBot(){var d=document.createElement('div');d.className='msg m-bot';
+    d.innerHTML='<div class="botname"><span class="d"></span>Redrob</div><div class="botbody"><div class="typing"><i></i><i></i><i></i></div></div>';
+    threadInner.appendChild(d);scrollDown();return d.querySelector('.botbody');}
+
+  function enterChat(){ if(!main.classList.contains('chatting')) main.classList.add('chatting'); }
+
+  function send(text,key){
+    enterChat(); closeOverlay();
+    appendUser(text);
+    composerA.value=''; composerB.value=''; syncSend();
+    var body=appendBot();
+    setTimeout(function(){ body.innerHTML=buildResult(key); wireQa(body); scrollDown(); composerB.focus(); }, 720);
+  }
+  function greet(){
+    enterChat(); closeOverlay(); state.dismissed=true;
+    var body=appendBot();
+    setTimeout(function(){ body.innerHTML=buildGreeting(); wireQa(body); scrollDown(); composerB.focus(); }, 480);
+  }
+
+  function route(key){
+    state.mode=key; setModeIndicator();
+    if(state.view==='returning'){state.reDismissed=true;reengage.classList.remove('show');}
+    send(MODES[key].query, key);
+  }
+
+  function openOverlay(){overlay.classList.add('open');}
+  function closeOverlay(){overlay.classList.remove('open');}
+
+  function render(){
+    renderModal(); renderReengage(); setModeIndicator();
+    if(main.classList.contains('chatting')){ closeOverlay(); reengage.classList.remove('show'); return; }
+    if(state.view==='first'){ reengage.classList.remove('show'); if(state.dismissed) closeOverlay(); else openOverlay(); }
+    else { closeOverlay(); reengage.classList.toggle('show', !state.reDismissed); }
+  }
+
+  function resetLanding(openModal){
+    main.classList.remove('chatting'); threadInner.innerHTML='';
+    state.mode=null; setModeIndicator();
+    composerA.value=''; composerB.value=''; syncSend();
+    Array.prototype.forEach.call(document.querySelectorAll('#chips .chip'),function(c){c.classList.remove('active');});
+    state.dismissed = openModal ? false : true;
+  }
+  function newChat(openModal){
+    resetLanding(openModal);
+    state.view='first';
+    Array.prototype.forEach.call($('#segView').children,function(x){x.classList.toggle('on',x.getAttribute('data-v')==='first');});
+    render();
+  }
+
+  $('#segView').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;
+    Array.prototype.forEach.call(this.children,function(x){x.classList.remove('on');}); b.classList.add('on');
+    resetLanding(false);
+    state.view=b.getAttribute('data-v');
+    if(state.view==='first'){state.dismissed=false;} else {state.reDismissed=false;}
+    render();
+  });
+  $('#segCohort').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;
+    Array.prototype.forEach.call(this.children,function(x){x.classList.remove('on');}); b.classList.add('on');
+    state.cohort=b.getAttribute('data-c'); render();
+  });
+  $('#reopen').addEventListener('click',function(){ newChat(true); });
+  $('#newchat').addEventListener('click',function(){ newChat(false); });
+  $('#logo').addEventListener('click',function(){ newChat(false); });
+  $('#skip').addEventListener('click',function(){ greet(); });
+  $('#reDismiss').addEventListener('click',function(){state.reDismissed=true;reengage.classList.remove('show');});
+  overlay.addEventListener('click',function(e){ if(e.target===overlay){ greet(); } });
+
+  composerA.addEventListener('input',syncSend);
+  composerB.addEventListener('input',syncSend);
+  function sendFrom(el){var t=el.value.trim(); if(!t)return; send(t,state.mode);}
+  sendA.addEventListener('click',function(){sendFrom(composerA);});
+  sendB.addEventListener('click',function(){sendFrom(composerB);});
+  composerA.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendFrom(composerA);}});
+  composerB.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendFrom(composerB);}});
+  Array.prototype.forEach.call(document.querySelectorAll('#chips .chip'),function(c){c.addEventListener('click',function(){route(c.getAttribute('data-key'));});});
+
+  render();
+})();
+</script>
+</body>
+</html>
